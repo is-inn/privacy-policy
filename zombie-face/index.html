@@ -1,61 +1,374 @@
 <!DOCTYPE html>
-  <html lang="ja">
-  <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>プライバシーポリシー｜ゾンビフェイス</title>
-  <style>
-  body { margin:0; background:#f7f9fa; color:#1f2933; font-family:-apple-system,"Segoe UI",Roboto,"Noto Sans JP",sans-serif; line-height:1.8; }
-.wrap { max-width:760px; margin:0 auto; padding:32px 20px 64px; }
-header { border-bottom:3px solid #7b1fa2; padding-bottom:16px; margin-bottom:8px; }
-h1 { font-size:1.7rem; margin:0 0 4px; }
-.meta { color:#52606d; font-size:.9rem; margin:4px 0 0; }
-h2 { font-size:1.15rem; margin:32px 0 8px; padding-left:10px; border-left:4px solid #7b1fa2; }
-a { color:#7b1fa2; }
-.card { background:#fff; border:1px solid #e4e7eb; border-radius:10px; padding:16px 20px; margin:16px 0; }
-  footer { margin-top:48px; padding-top:16px; border-top:1px solid #e4e7eb; color:#52606d; font-size:.85rem; }
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ゾンビフェイス｜マイクラのゾンビの顔を写真に</title>
+<meta name="description" content="スマホの写真からマイクラ（統合版）のゾンビの顔を差し替えるリソースパックを作れる無料ツール">
+<style>
+  :root{
+    --bg:#12160f; --panel:#1b2114; --panel2:#232b18;
+    --line:#39441f; --text:#eaf2df; --muted:#9fb089;
+    --green:#7bc043; --green-d:#5a962e; --accent:#a3e635;
+    --danger:#e06b5c;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(120% 80% at 50% -10%, #1e2814 0%, var(--bg) 60%);
+    color:var(--text);
+    font-family:-apple-system,"Segoe UI",Roboto,"Noto Sans JP",sans-serif;
+    line-height:1.7; -webkit-font-smoothing:antialiased;
+    min-height:100dvh;
+  }
+  .wrap{max-width:560px; margin:0 auto; padding:20px 16px 48px;}
+  header{text-align:center; padding:8px 0 4px;}
+  .logo{font-size:1.6rem; font-weight:800; letter-spacing:.02em; margin:0;}
+  .logo .z{color:var(--green);}
+  .tag{color:var(--muted); font-size:.9rem; margin:4px 0 0;}
+
+  .step-label{display:flex; align-items:center; gap:8px; font-weight:700; font-size:.95rem; margin:22px 4px 8px; color:var(--accent);}
+  .step-num{display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:var(--green); color:#0d1207; font-size:.85rem; font-weight:800;}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:16px; }
+
+  /* Preview */
+  .stage{display:flex; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap;}
+  .editor-box{position:relative; width:220px; height:220px; border-radius:12px; overflow:hidden; background:#0c0f08; border:1px solid var(--line); touch-action:none; cursor:grab;}
+  .editor-box.dragging{cursor:grabbing;}
+  #editor{display:block; width:100%; height:100%;}
+  .editor-hint{position:absolute; left:0; right:0; bottom:0; text-align:center; font-size:.72rem; padding:4px; color:#dfe; background:linear-gradient(transparent,rgba(0,0,0,.55)); pointer-events:none;}
+  .result{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .head-frame{width:132px; height:132px; border-radius:10px; background:var(--panel2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; padding:10px;}
+  #resultFace{width:100%; height:100%; image-rendering:pixelated; border-radius:4px;}
+  .result small{color:var(--muted); font-size:.75rem;}
+
+  .controls{margin-top:14px;}
+  .row{display:flex; align-items:center; gap:12px; margin-top:10px;}
+  .row label{font-size:.85rem; color:var(--muted); min-width:42px;}
+  input[type=range]{flex:1; accent-color:var(--green); height:26px;}
+
+  .btn{display:flex; align-items:center; justify-content:center; gap:10px; width:100%; border:none; border-radius:14px; padding:16px; font-size:1.05rem; font-weight:800; cursor:pointer; font-family:inherit;}
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:linear-gradient(180deg,var(--green),var(--green-d)); color:#0d1207;}
+  .btn-ghost{background:var(--panel2); color:var(--text); border:1px solid var(--line); font-weight:700; font-size:.95rem; padding:13px;}
+  .btn-download{background:linear-gradient(180deg,#b6f24a,#7bc043); color:#0d1207; margin-top:14px; font-size:1.1rem;}
+  .btn:disabled{opacity:.45; cursor:not-allowed;}
+  .btn .ic{font-size:1.2rem;}
+
+  .hidden{display:none !important;}
+  .note{font-size:.82rem; color:var(--muted); margin:8px 4px 0;}
+
+  details.help{margin-top:22px; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
+  details.help summary{cursor:pointer; padding:14px 16px; font-weight:700; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+  details.help summary::-webkit-details-marker{display:none}
+  details.help summary::after{content:"＋"; color:var(--green); font-weight:800;}
+  details.help[open] summary::after{content:"－";}
+  details.help .body{padding:0 16px 16px; font-size:.9rem;}
+  details.help ol{margin:6px 0 0; padding-left:1.2em;}
+  details.help li{margin:6px 0;}
+
+  footer{margin-top:28px; text-align:center; font-size:.78rem; color:var(--muted);}
+  footer a{color:var(--green);}
+  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:#0d1207; color:#eaf2df; border:1px solid var(--green); padding:12px 18px; border-radius:12px; font-size:.9rem; opacity:0; pointer-events:none; transition:.25s; z-index:50;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header>
-<h1>プライバシーポリシー</h1>
-<p class="meta">ゾンビフェイス（Android アプリ）</p>
-</header>
-<div class="card">
-  <p><strong>提供者：</strong>zari Lab<br>
-<strong>お問い合わせ：</strong><a href="mailto:kuriharaissin04@gmail.com">kuriharaissin04@gmail.com</a><br>
-  <strong>最終更新日：</strong>2026年7月21日</p>
+  <header>
+    <h1 class="logo"><span class="z">ゾンビ</span>フェイス</h1>
+    <p class="tag">マイクラ（統合版）のゾンビの顔を、あなたの写真に。</p>
+  </header>
+
+  <!-- STEP 1 -->
+  <div class="step-label"><span class="step-num">1</span>写真をえらぶ</div>
+  <button id="pickBtn" class="btn btn-primary"><span class="ic">📷</span>写真をえらぶ</button>
+  <input id="fileInput" type="file" accept="image/*" class="hidden">
+  <p class="note">顔写真・猫の写真・ミーム画像などなんでもOK。画像は端末の中だけで処理され、どこにも送信されません。</p>
+
+  <!-- STEP 2 -->
+  <div id="step2" class="step-label hidden"><span class="step-num">2</span>顔の位置を合わせる</div>
+  <div id="editCard" class="card hidden">
+    <div class="stage">
+      <div class="editor-box" id="editorBox">
+        <canvas id="editor" width="220" height="220"></canvas>
+        <div class="editor-hint">ドラッグで移動 ・ 下のスライダーで拡大</div>
+      </div>
+      <div class="result">
+        <div class="head-frame"><canvas id="resultFace" width="128" height="128"></canvas></div>
+        <small>ゲーム内イメージ</small>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="row">
+        <label>拡大</label>
+        <input id="zoom" type="range" min="100" max="320" value="100">
+      </div>
+      <button id="rechooseBtn" class="btn btn-ghost" style="margin-top:12px;"><span class="ic">🔄</span>写真を選びなおす</button>
+    </div>
   </div>
-  <p>本プライバシーポリシー（以下「本ポリシー」）は、zari Lab（以下「当方」）が提供するアプリ「ゾンビフェイス」（以下「本アプリ」）における、利用者情報の取り扱いについて定めるものです。本アプリは13歳以上の利用者を対象としており、子ども向け（ファミリー）アプリではありません。</p>
-  <h2>1. 収集する情報</h2>
-  <p>本アプリは、サービス提供のために以下の情報を取得する場合があります。</p>
-  <ul>
-  <li><strong>カメラ・写真</strong>：顔にエフェクトを適用するために、カメラ映像および利用者が選択した写真を利用します。これらの画像はエフェクト処理のために端末内でのみ使用され、利用者が保存・共有の操作を行わない限り、当方のサーバーへ送信・保存されることはありません。</li>
-  <li><strong>不具合情報</strong>：アプリのクラッシュ情報、動作ログ（品質改善のため）</li>
-  </ul>
-  <h2>2. 利用目的</h2>
-  <ul>
-  <li>顔エフェクト（ゾンビ加工）機能の提供</li>
-  <li>撮影・加工した画像の端末内でのプレビュー・保存</li>
-<li>不具合の修正およびサービス品質の改善</li>
-  <li>お問い合わせへの対応</li>
-  </ul>
-  <h2>3. 第三者への提供・共有</h2>
-  <p>当方は、法令に基づく場合を除き、利用者の同意なく個人情報を第三者へ販売・提供することはありません。</p>
-  <h2>4. 広告について</h2>
-  <p>本アプリは広告を表示しません。また、広告目的で個人情報を第三者へ提供することはありません。</p>
-  <h2>5. 情報の保管とセキュリティ</h2>
-  <p>取得した情報は、適切な安全管理措置のもとで保管します。通信を行う場合は暗号化（HTTPS/TLS）により保護しています。</p>
-  <h2>6. データの保持・削除</h2>
-  <p>カメラ映像および加工中の画像は、処理終了後に端末内から破棄されます。利用者が端末に保存した画像は、利用者ご自身で削除できます。その他のデータについては、上記のお問い合わせ先へのご連絡により削除を請求できます。請求を受けた場合、当方は合理的な期間内に対応します。</p>
-  <h2>7. 子どものプライバシー</h2>
-  <p>本アプリは13歳未満の子どもを対象としていません。13歳未満の方から意図せず個人情報を取得したことが判明した場合、当方は速やかに削除します。</p>
-<h2>8. 本ポリシーの変更</h2>
-  <p>本ポリシーは、必要に応じて改定されることがあります。重要な変更がある場合は、本アプリ内またはストア上で通知します。</p>
-  <h2>9. お問い合わせ</h2>
-  <p>本ポリシーに関するお問い合わせは、<a href="mailto:kuriharaissin04@gmail.com">kuriharaissin04@gmail.com</a> までご連絡ください。</p>
-  <footer>© 2026 zari Lab ／ ゾンビフェイス プライバシーポリシー</footer>
-  </div>
-  </body>
-  </html>
+
+  <!-- STEP 3 -->
+  <div id="step3" class="step-label hidden"><span class="step-num">3</span>マイクラに入れる</div>
+  <button id="downloadBtn" class="btn btn-download hidden" disabled><span class="ic">⬇️</span>パックをダウンロード</button>
+
+  <details class="help">
+    <summary>マイクラへの入れかた</summary>
+    <div class="body">
+      <ol>
+        <li>「パックをダウンロード」を押して <b>zombieface.mcpack</b> を保存します。</li>
+        <li>保存したファイルをタップ → 「Minecraftで開く」を選びます。自動でパックが取り込まれます。</li>
+        <li>マイクラの <b>設定 → ストレージ / グローバルリソース</b>（またはワールドの「リソースパック」）から <b>ゾンビフェイス</b> を <b>有効（→側へ移動）</b>にします。</li>
+        <li>ワールドに入ると、ゾンビの顔があなたの写真になっています！🧟</li>
+      </ol>
+      <p class="note">※ 反映されないときは、一度マイクラを再起動してください。</p>
+    </div>
+  </details>
+
+  <footer>
+    <p>© 2026 zari Lab ／ ゾンビフェイス<br>
+    <a href="./privacy/">プライバシーポリシー</a></p>
+    <p class="note">Minecraft は Mojang / Microsoft の商標です。本ツールは非公式で、Mojang・Microsoft とは関係ありません。</p>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+(function(){
+  // ---- config ----
+  var S = 8;                 // texture scale (64*S x 64*S). face = 8*S
+  var TEX = 64 * S;          // 512
+  var FACE = 8 * S;          // 64  -> face region pixels
+  var EDIT = 220;            // editor display size
+  var SKIN = [106,154,84];   // zombie green
+  var SHIRT = [74,122,135];  // teal
+  var PANTS = [58,63,107];   // indigo
+  var UUID1 = "e5b1a7c2-4f3d-4a1e-9c8b-000000000001";
+  var UUID2 = "e5b1a7c2-4f3d-4a1e-9c8b-000000000002";
+
+  // ---- state ----
+  var img = null;            // HTMLImageElement
+  var zoom = 1;              // from slider
+  var offX = 0, offY = 0;    // pan in editor px
+
+  // ---- elements ----
+  var $ = function(id){ return document.getElementById(id); };
+  var fileInput=$("fileInput"), pickBtn=$("pickBtn"), rechooseBtn=$("rechooseBtn");
+  var editor=$("editor"), editorBox=$("editorBox"), resultFace=$("resultFace");
+  var zoomEl=$("zoom"), downloadBtn=$("downloadBtn");
+  var step2=$("step2"), editCard=$("editCard"), step3=$("step3");
+  var toastEl=$("toast");
+  var ectx=editor.getContext("2d");
+  var rctx=resultFace.getContext("2d");
+  rctx.imageSmoothingEnabled=false;
+
+  function toast(msg){
+    toastEl.textContent=msg; toastEl.classList.add("show");
+    clearTimeout(toast._t); toast._t=setTimeout(function(){ toastEl.classList.remove("show"); },2200);
+  }
+
+  // ---- transform helpers (shared by editor + face) ----
+  function baseScale(){ // "cover" the square
+    if(!img) return 1;
+    return Math.max(EDIT/img.width, EDIT/img.height);
+  }
+  function drawParams(){
+    var ds = baseScale()*zoom;
+    var dw = img.width*ds, dh = img.height*ds;
+    var x = (EDIT-dw)/2 + offX;
+    var y = (EDIT-dh)/2 + offY;
+    return {x:x,y:y,w:dw,h:dh};
+  }
+
+  // ---- render editor preview + blocky result ----
+  function renderEditor(){
+    ectx.clearRect(0,0,EDIT,EDIT);
+    ectx.fillStyle="#0c0f08"; ectx.fillRect(0,0,EDIT,EDIT);
+    if(img){
+      var p=drawParams();
+      ectx.imageSmoothingEnabled=true;
+      ectx.drawImage(img,p.x,p.y,p.w,p.h);
+    }
+    renderResult();
+  }
+  function faceCanvas(){
+    // render the crop at texture resolution (FACE x FACE)
+    var c=document.createElement("canvas"); c.width=FACE; c.height=FACE;
+    var x=c.getContext("2d");
+    x.imageSmoothingEnabled=true;
+    x.fillStyle="rgb("+SKIN.join(",")+")"; x.fillRect(0,0,FACE,FACE);
+    if(img){
+      var k=FACE/EDIT, p=drawParams();
+      x.drawImage(img,p.x*k,p.y*k,p.w*k,p.h*k);
+    }
+    return c;
+  }
+  function renderResult(){
+    var f=faceCanvas();
+    rctx.clearRect(0,0,128,128);
+    rctx.imageSmoothingEnabled=false;
+    rctx.drawImage(f,0,0,128,128);
+  }
+
+  // ---- build full zombie texture ----
+  function fillRect(x,rgb,X,Y,W,H){ x.fillStyle="rgb("+rgb.join(",")+")"; x.fillRect(X*S,Y*S,W*S,H*S); }
+  function buildTexture(){
+    var c=document.createElement("canvas"); c.width=TEX; c.height=TEX;
+    var x=c.getContext("2d");
+    x.imageSmoothingEnabled=false;
+    x.clearRect(0,0,TEX,TEX);
+    // whole body = green skin
+    fillRect(x,SKIN,0,0,64,64);
+    // shirt blocks (body + arms)
+    fillRect(x,SHIRT,16,16,24,16); // body
+    fillRect(x,SHIRT,40,16,16,16); // right arm
+    fillRect(x,SHIRT,32,48,16,16); // left arm
+    // pants blocks (legs)
+    fillRect(x,PANTS,0,16,16,16);  // right leg
+    fillRect(x,PANTS,16,48,16,16); // left leg
+    // subtle "rotten" noise
+    x.globalAlpha=0.10;
+    for(var i=0;i<TEX*TEX/26;i++){
+      var px=(Math.random()*TEX)|0, py=(Math.random()*TEX)|0;
+      x.fillStyle = Math.random()<0.5 ? "#000" : "#2c3a12";
+      x.fillRect(px,py,S,S);
+    }
+    x.globalAlpha=1;
+    // face photo on top
+    x.drawImage(faceCanvas(),8*S,8*S,FACE,FACE);
+    return c;
+  }
+
+  // ---- minimal ZIP (store, no compression) ----
+  var crcTable=(function(){var t=[];for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+  function crc32(buf){var c=0xFFFFFFFF;for(var i=0;i<buf.length;i++)c=crcTable[(c^buf[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+  function u16(n){return [n&255,(n>>>8)&255];}
+  function u32(n){return [n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];}
+  function zip(files){
+    // files: [{name, data:Uint8Array}]
+    var chunks=[], central=[], offset=0;
+    files.forEach(function(f){
+      var name=new TextEncoder().encode(f.name);
+      var crc=crc32(f.data), sz=f.data.length;
+      var lh=[].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(0),
+              u32(crc),u32(sz),u32(sz),u16(name.length),u16(0));
+      var lhb=new Uint8Array(lh.length+name.length);
+      lhb.set(lh,0); lhb.set(name,lh.length);
+      chunks.push(lhb); chunks.push(f.data);
+      var ch=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(0),
+              u32(crc),u32(sz),u32(sz),u16(name.length),u16(0),u16(0),u16(0),u16(0),
+              u32(0),u32(offset));
+      var chb=new Uint8Array(ch.length+name.length);
+      chb.set(ch,0); chb.set(name,ch.length);
+      central.push(chb);
+      offset += lhb.length + sz;
+    });
+    var cdSize=central.reduce(function(a,b){return a+b.length;},0);
+    var end=[].concat(u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),
+            u32(cdSize),u32(offset),u16(0));
+    var parts=chunks.concat(central,[new Uint8Array(end)]);
+    var total=parts.reduce(function(a,b){return a+b.length;},0);
+    var out=new Uint8Array(total), pos=0;
+    parts.forEach(function(p){ out.set(p,pos); pos+=p.length; });
+    return out;
+  }
+
+  function canvasToBytes(canvas){
+    return new Promise(function(res){
+      canvas.toBlob(function(b){ b.arrayBuffer().then(function(ab){ res(new Uint8Array(ab)); }); },"image/png");
+    });
+  }
+
+  function manifest(){
+    return {
+      format_version:2,
+      header:{ name:"ゾンビフェイス", description:"ゾンビの顔をあなたの写真に差し替えます（zari Lab）",
+        uuid:UUID1, version:[1,0,0], min_engine_version:[1,16,0] },
+      modules:[ { type:"resources", uuid:UUID2, version:[1,0,0] } ]
+    };
+  }
+
+  async function makePack(){
+    var tex=buildTexture();
+    var icon=document.createElement("canvas"); icon.width=128; icon.height=128;
+    var ix=icon.getContext("2d"); ix.imageSmoothingEnabled=false; ix.drawImage(faceCanvas(),0,0,128,128);
+    var texBytes=await canvasToBytes(tex);
+    var iconBytes=await canvasToBytes(icon);
+    var manBytes=new TextEncoder().encode(JSON.stringify(manifest(),null,2));
+    var data=zip([
+      {name:"manifest.json", data:manBytes},
+      {name:"pack_icon.png", data:iconBytes},
+      {name:"textures/entity/zombie/zombie.png", data:texBytes}
+    ]);
+    return new Blob([data],{type:"application/octet-stream"});
+  }
+
+  // ---- events ----
+  pickBtn.addEventListener("click",function(){ fileInput.click(); });
+  rechooseBtn.addEventListener("click",function(){ fileInput.click(); });
+  fileInput.addEventListener("change",function(e){
+    var file=e.target.files&&e.target.files[0];
+    if(!file) return;
+    var url=URL.createObjectURL(file);
+    var im=new Image();
+    im.onload=function(){
+      img=im; zoom=1; offX=0; offY=0; zoomEl.value=100;
+      step2.classList.remove("hidden"); editCard.classList.remove("hidden");
+      step3.classList.remove("hidden"); downloadBtn.classList.remove("hidden");
+      downloadBtn.disabled=false;
+      pickBtn.querySelector(".ic").textContent="✅";
+      pickBtn.childNodes[1].nodeValue="写真を変える";
+      renderEditor();
+      URL.revokeObjectURL(url);
+      editCard.scrollIntoView({behavior:"smooth",block:"center"});
+    };
+    im.onerror=function(){ toast("この画像は読み込めませんでした"); };
+    im.src=url;
+  });
+
+  zoomEl.addEventListener("input",function(){ zoom=zoomEl.value/100; renderEditor(); });
+
+  // drag to pan (pointer events)
+  var dragging=false, lastX=0, lastY=0;
+  editorBox.addEventListener("pointerdown",function(e){
+    if(!img) return;
+    dragging=true; lastX=e.clientX; lastY=e.clientY;
+    editorBox.classList.add("dragging"); editorBox.setPointerCapture(e.pointerId);
+  });
+  editorBox.addEventListener("pointermove",function(e){
+    if(!dragging) return;
+    offX += (e.clientX-lastX); offY += (e.clientY-lastY);
+    lastX=e.clientX; lastY=e.clientY; renderEditor();
+  });
+  function endDrag(){ dragging=false; editorBox.classList.remove("dragging"); }
+  editorBox.addEventListener("pointerup",endDrag);
+  editorBox.addEventListener("pointercancel",endDrag);
+
+  downloadBtn.addEventListener("click",async function(){
+    if(!img){ toast("先に写真をえらんでください"); return; }
+    downloadBtn.disabled=true;
+    var old=downloadBtn.innerHTML; downloadBtn.innerHTML='<span class="ic">⏳</span>作成中…';
+    try{
+      var blob=await makePack();
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement("a");
+      a.href=url; a.download="zombieface.mcpack";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); },4000);
+      toast("ダウンロードしました！マイクラで開いてね");
+    }catch(err){
+      toast("作成に失敗しました: "+err.message);
+    }
+    downloadBtn.innerHTML=old; downloadBtn.disabled=false;
+  });
+
+  // initial paint (placeholder green face)
+  renderResult();
+})();
+</script>
+</body>
+</html>
