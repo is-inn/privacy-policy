@@ -10,7 +10,7 @@
     --bg:#f6f8f3; --panel:#ffffff; --panel2:#eef2e8;
     --line:#dfe4d6; --text:#20281a; --muted:#6f7a63;
     --green:#69b533; --green-d:#4d8f22; --accent:#3f7d1a;
-    --gold:#e0a52a; --gold-bg:#fff7e4; --gold-line:#ecd39a;
+    --gold:#e0a52a; --gold-bg:#fff7e4; --gold-line:#ecd39a; --gold-ink:#9a6b12;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
@@ -20,8 +20,16 @@
     font-family:-apple-system,"Segoe UI",Roboto,"Noto Sans JP",sans-serif;
     line-height:1.6; -webkit-font-smoothing:antialiased; min-height:100dvh;
   }
-  .wrap{max-width:460px; margin:0 auto; padding:22px 18px 40px;}
-  header{text-align:center; padding:6px 0 2px;}
+  .wrap{max-width:460px; margin:0 auto; padding:16px 18px 40px;}
+
+  .topbar{display:flex; justify-content:flex-end; align-items:center; min-height:34px;}
+  .planbadge{display:inline-flex; align-items:center; gap:5px; border-radius:999px; padding:7px 13px;
+    font-size:.82rem; font-weight:800; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--gold-line); background:var(--gold-bg); color:var(--gold-ink);}
+  .planbadge.on{background:var(--gold); color:#fff; border-color:var(--gold);}
+  .planbadge:active{transform:translateY(1px);}
+
+  header{text-align:center; padding:2px 0 2px;}
   .logo{font-size:2rem; font-weight:800; margin:0; letter-spacing:.02em;}
   .logo .z{color:var(--green);}
 
@@ -54,20 +62,7 @@
   input[type=range]{flex:1; accent-color:var(--green); height:30px;}
   .rechoose{display:block; margin:12px auto 0; background:none; border:none; color:var(--muted); font-size:.9rem; cursor:pointer; font-family:inherit; text-decoration:underline;}
 
-  .plans-title{text-align:center; font-size:1rem; font-weight:800; color:var(--accent); margin:26px 0 2px;}
-  .pricing{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;}
-  .plan{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 14px; text-align:center; position:relative; box-shadow:0 2px 10px rgba(40,60,20,.05);}
-  .plan.pro{border-color:var(--gold-line); background:var(--gold-bg);}
-  .plan h3{margin:0; font-size:1.05rem;}
-  .plan .price{font-size:1.7rem; font-weight:800; margin:6px 0 2px;}
-  .plan .price small{font-size:.8rem; font-weight:600; color:var(--muted);}
-  .plan .desc{font-size:.95rem; color:var(--text); margin:2px 0 0; font-weight:700;}
-  .ribbon{position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:var(--gold); color:#fff; font-size:.7rem; font-weight:800; padding:2px 10px; border-radius:999px;}
-  .pick{margin-top:14px; width:100%; border:none; border-radius:12px; padding:12px; font-weight:800; cursor:pointer; font-family:inherit; font-size:.95rem;}
-  .pick.gold{background:var(--gold); color:#fff;}
-  .pick.plain{background:var(--panel2); color:var(--muted); border:1px solid var(--line);}
-
-  details.help{margin-top:22px;}
+  details.help{margin-top:24px;}
   details.help summary{cursor:pointer; list-style:none; text-align:center; color:var(--muted); font-size:.85rem;}
   details.help summary::-webkit-details-marker{display:none}
   details.help .body{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px 16px; margin-top:8px; font-size:.85rem;}
@@ -80,22 +75,33 @@
   .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:#20281a; color:#fff; border:1px solid var(--green); padding:12px 18px; border-radius:12px; font-size:.9rem; opacity:0; pointer-events:none; transition:.25s; z-index:60; max-width:90%; text-align:center;}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
+  /* Plan modal (opened from the badge) */
   .modal{position:fixed; inset:0; background:rgba(30,40,15,.45); display:none; align-items:center; justify-content:center; padding:18px; z-index:70;}
   .modal.show{display:flex;}
-  .modal .box{background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:24px 20px; max-width:360px; width:100%; text-align:center; box-shadow:0 12px 40px rgba(20,30,10,.25);}
-  .modal .big-emoji{font-size:2.4rem;}
-  .modal h2{margin:6px 0 2px; font-size:1.3rem;}
-  .modal .lead{color:var(--text); font-size:1rem; margin:0 0 4px;}
-  .modal .price{font-size:1.6rem; font-weight:800; margin:8px 0;}
-  .modal .price small{font-size:.85rem; color:var(--muted); font-weight:600;}
-  .modal .disclaim{font-size:.72rem; color:var(--muted); margin:12px 0 0;}
-  .modal .close{background:none; border:none; color:var(--muted); font-size:.85rem; cursor:pointer; margin-top:12px; width:100%; font-family:inherit;}
+  .modal .box{background:var(--bg); border:1px solid var(--line); border-radius:22px; padding:22px 18px; max-width:400px; width:100%; box-shadow:0 12px 40px rgba(20,30,10,.25);}
+  .modal .m-title{text-align:center; font-size:1.15rem; font-weight:800; margin:0 0 14px;}
+  .pricing{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .plan{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px 12px; text-align:center; position:relative;}
+  .plan.pro{border-color:var(--gold-line); background:var(--gold-bg);}
+  .plan h3{margin:0; font-size:1rem;}
+  .plan .price{font-size:1.5rem; font-weight:800; margin:6px 0 2px;}
+  .plan .price small{font-size:.78rem; font-weight:600; color:var(--muted);}
+  .plan .desc{font-size:.9rem; color:var(--text); margin:2px 0 0; font-weight:700;}
+  .ribbon{position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:var(--gold); color:#fff; font-size:.7rem; font-weight:800; padding:2px 10px; border-radius:999px;}
+  .pick{margin-top:14px; width:100%; border:none; border-radius:12px; padding:12px 8px; font-weight:800; cursor:pointer; font-family:inherit; font-size:.9rem; line-height:1.3;}
+  .pick.gold{background:var(--gold); color:#fff;}
+  .pick.current{background:var(--panel2); color:var(--muted); border:1px solid var(--line);}
+  .modal .disclaim{font-size:.72rem; color:var(--muted); margin:14px 4px 0; text-align:center;}
+  .modal .close{background:none; border:none; color:var(--muted); font-size:.9rem; cursor:pointer; margin-top:12px; width:100%; font-family:inherit;}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="topbar">
+    <button id="planBadge" class="planbadge">⭐ 使い放題</button>
+  </div>
   <header>
-    <h1 class="logo">🧟 <span class="z">ゾンビ</span>フェイス</h1>
+    <h1 class="logo"><span class="z">ゾンビ</span>フェイス</h1>
   </header>
 
   <button id="pickBtn" class="big big-pick"><span class="ic">📷</span>しゃしんをえらぶ</button>
@@ -122,23 +128,6 @@
   <button id="downloadBtn" class="big big-dl" style="display:none"><span class="ic">⬇️</span>ダウンロード</button>
   <div id="dots" class="dots" style="display:none"></div>
 
-  <div class="plans-title">プラン</div>
-  <div class="pricing">
-    <div class="plan">
-      <h3>むりょう</h3>
-      <div class="price">¥0</div>
-      <div class="desc">3かいまで</div>
-      <button id="pickFree" class="pick plain">つかってる</button>
-    </div>
-    <div class="plan pro">
-      <span class="ribbon">おすすめ</span>
-      <h3>プレミアム</h3>
-      <div class="price">¥300<small>/月</small></div>
-      <div class="desc">むせいげん</div>
-      <button id="pickPro" class="pick gold">えらぶ</button>
-    </div>
-  </div>
-
   <details class="help">
     <summary>？ マイクラへの入れかた</summary>
     <div class="body">
@@ -155,13 +144,25 @@
   </footer>
 </div>
 
-<div class="modal" id="upModal">
+<!-- PLAN MODAL -->
+<div class="modal" id="planModal">
   <div class="box">
-    <div class="big-emoji">🌟</div>
-    <h2>プレミアム</h2>
-    <p class="lead">かおの変更が <b>むせいげん</b>に！</p>
-    <div class="price">¥300<small> / 月</small></div>
-    <button id="doUpgrade" class="pick gold">プレミアムにする</button>
+    <p class="m-title">プラン</p>
+    <div class="pricing">
+      <div class="plan">
+        <h3>むりょう</h3>
+        <div class="price">¥0</div>
+        <div class="desc">3かいまで</div>
+        <button id="pickFree" class="pick current">現在使用中</button>
+      </div>
+      <div class="plan pro">
+        <span class="ribbon">おすすめ</span>
+        <h3>プレミアム</h3>
+        <div class="price">¥300<small>/月</small></div>
+        <div class="desc">使い放題</div>
+        <button id="pickPro" class="pick gold">プレミアムプラン購入</button>
+      </div>
+    </div>
     <p class="disclaim">お支払い機能は準備中です。いまは無料でおためしできます。</p>
     <button class="close" id="closeModal">とじる</button>
   </div>
@@ -188,8 +189,8 @@
   var editor=$("editor"), editorBox=$("editorBox"), resultFace=$("resultFace");
   var zoomEl=$("zoom"), downloadBtn=$("downloadBtn"), dots=$("dots");
   var editCard=$("editCard"), toastEl=$("toast");
+  var planBadge=$("planBadge"), planModal=$("planModal"), closeModal=$("closeModal");
   var pickPro=$("pickPro"), pickFree=$("pickFree");
-  var upModal=$("upModal"), doUpgrade=$("doUpgrade"), closeModal=$("closeModal");
   var ectx=editor.getContext("2d");
   var rctx=resultFace.getContext("2d"); rctx.imageSmoothingEnabled=false;
 
@@ -197,31 +198,32 @@
   function remaining(){ return Math.max(0, FREE_LIMIT-used); }
 
   function refreshUI(){
+    // badge
+    if(premium){ planBadge.classList.add("on"); planBadge.textContent="⭐ 使い放題"; }
+    else{ planBadge.classList.remove("on"); planBadge.textContent="⭐ 使い放題"; }
+    // remaining dots (after a photo is chosen)
     if(dots.style.display!=="none"){
-      if(premium){ dots.innerHTML='<span class="inf">∞</span> むせいげん'; }
-      else{
-        var html='のこり ';
-        for(var i=0;i<FREE_LIMIT;i++){ html+='<span class="dot'+(i<remaining()?' on':'')+'"></span>'; }
-        dots.innerHTML=html;
-      }
+      if(premium){ dots.innerHTML='<span class="inf">∞</span> 使い放題'; }
+      else{ var html='のこり '; for(var i=0;i<FREE_LIMIT;i++){ html+='<span class="dot'+(i<remaining()?' on':'')+'"></span>'; } dots.innerHTML=html; }
     }
+    // modal buttons
     if(premium){
-      pickFree.textContent="むりょうに戻す"; pickFree.disabled=false; pickFree.classList.remove("plain");
-      pickPro.textContent="つかってる"; pickPro.disabled=true; pickPro.style.opacity=".7";
+      pickFree.textContent="むりょうに戻す"; pickFree.disabled=false; pickFree.className="pick";
+      pickPro.textContent="現在使用中"; pickPro.disabled=true; pickPro.className="pick current";
     }else{
-      pickFree.textContent="つかってる"; pickFree.disabled=true; pickFree.classList.add("plain");
-      pickPro.textContent="えらぶ"; pickPro.disabled=false; pickPro.style.opacity="1";
+      pickFree.textContent="現在使用中"; pickFree.disabled=true; pickFree.className="pick current";
+      pickPro.textContent="プレミアムプラン購入"; pickPro.disabled=false; pickPro.className="pick gold";
     }
   }
-  function openModal(){ upModal.classList.add("show"); }
-  function hideModal(){ upModal.classList.remove("show"); }
-  function goPremium(){ premium=true; save("zf_premium","1"); refreshUI(); hideModal(); toast("⭐ プレミアムになりました！"); }
+  function openModal(){ planModal.classList.add("show"); }
+  function hideModal(){ planModal.classList.remove("show"); }
+  function buyPremium(){ premium=true; save("zf_premium","1"); refreshUI(); hideModal(); toast("⭐ プレミアムになりました！使い放題です"); }
 
-  pickPro.addEventListener("click", openModal);
-  doUpgrade.addEventListener("click", goPremium);
+  planBadge.addEventListener("click", openModal);
   closeModal.addEventListener("click", hideModal);
-  upModal.addEventListener("click", function(e){ if(e.target===upModal) hideModal(); });
-  pickFree.addEventListener("click", function(){ if(premium){ premium=false; save("zf_premium","0"); refreshUI(); toast("むりょうに戻しました"); } });
+  planModal.addEventListener("click", function(e){ if(e.target===planModal) hideModal(); });
+  pickPro.addEventListener("click", function(){ if(!premium) buyPremium(); });
+  pickFree.addEventListener("click", function(){ if(premium){ premium=false; save("zf_premium","0"); refreshUI(); toast("むりょうプランに戻しました"); } });
 
   function baseScale(){ if(!img) return 1; return Math.max(EDIT/img.width, EDIT/img.height); }
   function drawParams(){ var ds=baseScale()*zoom, dw=img.width*ds, dh=img.height*ds; return { x:(EDIT-dw)/2+offX, y:(EDIT-dh)/2+offY, w:dw, h:dh }; }
@@ -313,7 +315,7 @@
 
   downloadBtn.addEventListener("click",async function(){
     if(!img){ toast("さきに写真をえらんでね"); return; }
-    if(!premium && remaining()<=0){ openModal(); return; }
+    if(!premium && remaining()<=0){ toast("むりょうは3かいまで。プレミアムで使い放題に！"); openModal(); return; }
     downloadBtn.disabled=true; var old=downloadBtn.innerHTML; downloadBtn.innerHTML='<span class="ic">⏳</span>つくってる…';
     try{
       var blob=await makePack(), url=URL.createObjectURL(blob);
