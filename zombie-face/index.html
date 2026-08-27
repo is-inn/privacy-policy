@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>ゾンビフェイス｜マイクラのゾンビの顔を写真に</title>
-<meta name="description" content="スマホの写真からマイクラ（統合版）のゾンビの顔を差し替えるリソースパックを作れる無料ツール">
+<meta name="description" content="スマホの写真からマイクラ（統合版）のゾンビの顔を差し替えるリソースパックを作れるツール">
 <style>
   :root{
     --bg:#12160f; --panel:#1b2114; --panel2:#232b18;
     --line:#39441f; --text:#eaf2df; --muted:#9fb089;
     --green:#7bc043; --green-d:#5a962e; --accent:#a3e635;
-    --danger:#e06b5c;
+    --gold:#f5c451; --danger:#e06b5c;
     --radius:16px;
   }
   *{box-sizing:border-box}
@@ -28,12 +28,22 @@
   .logo .z{color:var(--green);}
   .tag{color:var(--muted); font-size:.9rem; margin:4px 0 0;}
 
+  /* Plan status bar */
+  .planbar{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin:16px 0 4px;}
+  .planbar .left{display:flex; align-items:center; gap:8px; font-size:.9rem;}
+  .badge{display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:999px; font-size:.78rem; font-weight:800;}
+  .badge.free{background:#2a331b; color:var(--accent); border:1px solid var(--line);}
+  .badge.premium{background:linear-gradient(180deg,#5a4a12,#3a3010); color:var(--gold); border:1px solid #6b5a1e;}
+  .remain{color:var(--muted); font-size:.82rem;}
+  .remain b{color:var(--text);}
+  .planbar .up{background:var(--gold); color:#241c00; border:none; border-radius:999px; padding:7px 12px; font-size:.8rem; font-weight:800; cursor:pointer; white-space:nowrap;}
+
   .step-label{display:flex; align-items:center; gap:8px; font-weight:700; font-size:.95rem; margin:22px 4px 8px; color:var(--accent);}
   .step-num{display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:var(--green); color:#0d1207; font-size:.85rem; font-weight:800;}
 
   .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:16px; }
 
-  /* Preview */
   .stage{display:flex; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap;}
   .editor-box{position:relative; width:220px; height:220px; border-radius:12px; overflow:hidden; background:#0c0f08; border:1px solid var(--line); touch-action:none; cursor:grab;}
   .editor-box.dragging{cursor:grabbing;}
@@ -56,9 +66,27 @@
   .btn-download{background:linear-gradient(180deg,#b6f24a,#7bc043); color:#0d1207; margin-top:14px; font-size:1.1rem;}
   .btn:disabled{opacity:.45; cursor:not-allowed;}
   .btn .ic{font-size:1.2rem;}
+  .dl-caption{text-align:center; font-size:.8rem; color:var(--muted); margin:8px 4px 0;}
+  .dl-caption b{color:var(--accent);}
 
   .hidden{display:none !important;}
   .note{font-size:.82rem; color:var(--muted); margin:8px 4px 0;}
+
+  /* Pricing */
+  .pricing{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;}
+  .plan{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 14px; position:relative;}
+  .plan.pro{border-color:#6b5a1e; background:linear-gradient(180deg,#20240f,#191d10);}
+  .plan h3{margin:0 0 2px; font-size:1rem;}
+  .plan .price{font-size:1.5rem; font-weight:800; margin:4px 0 2px;}
+  .plan .price small{font-size:.8rem; font-weight:600; color:var(--muted);}
+  .plan ul{list-style:none; padding:0; margin:10px 0 0; font-size:.85rem;}
+  .plan li{margin:6px 0; padding-left:20px; position:relative;}
+  .plan li::before{content:"✔"; position:absolute; left:0; color:var(--green);}
+  .plan.pro li::before{color:var(--gold);}
+  .ribbon{position:absolute; top:-9px; right:10px; background:var(--gold); color:#241c00; font-size:.68rem; font-weight:800; padding:2px 8px; border-radius:999px;}
+  .plan .pick{margin-top:12px; width:100%; border:none; border-radius:10px; padding:11px; font-weight:800; cursor:pointer; font-family:inherit; font-size:.9rem;}
+  .plan .pick.gold{background:var(--gold); color:#241c00;}
+  .plan .pick.plain{background:var(--panel2); color:var(--muted); border:1px solid var(--line);}
 
   details.help{margin-top:22px; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
   details.help summary{cursor:pointer; padding:14px 16px; font-weight:700; list-style:none; display:flex; justify-content:space-between; align-items:center;}
@@ -71,8 +99,20 @@
 
   footer{margin-top:28px; text-align:center; font-size:.78rem; color:var(--muted);}
   footer a{color:var(--green);}
-  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:#0d1207; color:#eaf2df; border:1px solid var(--green); padding:12px 18px; border-radius:12px; font-size:.9rem; opacity:0; pointer-events:none; transition:.25s; z-index:50;}
+  .footlinks{margin-bottom:6px;}
+  .footlinks a{margin:0 6px; cursor:pointer;}
+
+  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:#0d1207; color:#eaf2df; border:1px solid var(--green); padding:12px 18px; border-radius:12px; font-size:.9rem; opacity:0; pointer-events:none; transition:.25s; z-index:60; max-width:90%; text-align:center;}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* Modal */
+  .modal{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:18px; z-index:70;}
+  .modal.show{display:flex;}
+  .modal .box{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:22px 20px; max-width:400px; width:100%;}
+  .modal h2{margin:0 0 4px; font-size:1.25rem;}
+  .modal .lead{color:var(--muted); font-size:.9rem; margin:0 0 14px;}
+  .modal .disclaim{font-size:.75rem; color:var(--muted); margin:14px 0 0;}
+  .modal .close{background:none; border:none; color:var(--muted); font-size:.85rem; cursor:pointer; margin-top:10px; width:100%; font-family:inherit;}
 </style>
 </head>
 <body>
@@ -81,6 +121,15 @@
     <h1 class="logo"><span class="z">ゾンビ</span>フェイス</h1>
     <p class="tag">マイクラ（統合版）のゾンビの顔を、あなたの写真に。</p>
   </header>
+
+  <!-- PLAN STATUS BAR -->
+  <div class="planbar">
+    <div class="left">
+      <span id="planBadge" class="badge free">🟢 無料プラン</span>
+      <span id="remainLabel" class="remain">残り <b>3</b> 回</span>
+    </div>
+    <button id="planUpBtn" class="up">プレミアム</button>
+  </div>
 
   <!-- STEP 1 -->
   <div class="step-label"><span class="step-num">1</span>写真をえらぶ</div>
@@ -113,6 +162,34 @@
   <!-- STEP 3 -->
   <div id="step3" class="step-label hidden"><span class="step-num">3</span>マイクラに入れる</div>
   <button id="downloadBtn" class="btn btn-download hidden" disabled><span class="ic">⬇️</span>パックをダウンロード</button>
+  <p id="dlCaption" class="dl-caption hidden"></p>
+
+  <!-- PRICING -->
+  <div class="step-label"><span class="step-num">★</span>プラン</div>
+  <div class="pricing">
+    <div class="plan">
+      <h3>無料プラン</h3>
+      <div class="price">¥0</div>
+      <ul>
+        <li>顔の変更 <b>3回まで</b></li>
+        <li>広告なし</li>
+        <li>統合版リソースパック</li>
+      </ul>
+      <button id="pickFree" class="pick plain">利用中</button>
+    </div>
+    <div class="plan pro">
+      <span class="ribbon">おすすめ</span>
+      <h3>プレミアム</h3>
+      <div class="price">¥300<small>/月</small></div>
+      <ul>
+        <li>顔の変更 <b>無制限</b></li>
+        <li>広告なし</li>
+        <li>今後の新機能も使える</li>
+      </ul>
+      <button id="pickPro" class="pick gold">プレミアムにする</button>
+    </div>
+  </div>
+  <p class="note">※ どちらのプランも広告は表示されません。</p>
 
   <details class="help">
     <summary>マイクラへの入れかた</summary>
@@ -128,10 +205,29 @@
   </details>
 
   <footer>
+    <p class="footlinks"><a id="resetLink">（テスト用）回数をリセット</a></p>
     <p>© 2026 zari Lab ／ ゾンビフェイス<br>
     <a href="./privacy/">プライバシーポリシー</a></p>
     <p class="note">Minecraft は Mojang / Microsoft の商標です。本ツールは非公式で、Mojang・Microsoft とは関係ありません。</p>
   </footer>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div class="modal" id="upModal">
+  <div class="box">
+    <h2>🌟 プレミアムにする</h2>
+    <p class="lead">月額 <b>300円</b> で、ゾンビの顔の変更が <b>無制限</b>に。広告も一切なし。</p>
+    <div class="plan pro" style="border:none; background:transparent; padding:0;">
+      <ul>
+        <li>顔の変更が無制限</li>
+        <li>広告なし</li>
+        <li>今後追加される新機能も利用可能</li>
+      </ul>
+    </div>
+    <button id="doUpgrade" class="pick gold" style="margin-top:16px;">プレミアムを有効にする</button>
+    <p class="disclaim">※ 現在はUI確認用の試作版です。お支払い機能（月額課金）は今後のアップデートで対応予定のため、いまは無料でプレミアムを試せます。</p>
+    <button class="close" id="closeModal">とじる</button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -140,162 +236,152 @@
 "use strict";
 (function(){
   // ---- config ----
-  var S = 8;                 // texture scale (64*S x 64*S). face = 8*S
-  var TEX = 64 * S;          // 512
-  var FACE = 8 * S;          // 64  -> face region pixels
-  var EDIT = 220;            // editor display size
-  var SKIN = [106,154,84];   // zombie green
-  var SHIRT = [74,122,135];  // teal
-  var PANTS = [58,63,107];   // indigo
+  var S = 8, TEX = 64*S, FACE = 8*S, EDIT = 220;
+  var SKIN = [106,154,84], SHIRT = [74,122,135], PANTS = [58,63,107];
   var UUID1 = "e5b1a7c2-4f3d-4a1e-9c8b-000000000001";
   var UUID2 = "e5b1a7c2-4f3d-4a1e-9c8b-000000000002";
+  var FREE_LIMIT = 3;
 
-  // ---- state ----
-  var img = null;            // HTMLImageElement
-  var zoom = 1;              // from slider
-  var offX = 0, offY = 0;    // pan in editor px
+  // ---- persisted plan state ----
+  function load(k, d){ try{ var v=localStorage.getItem(k); return v===null?d:v; }catch(e){ return d; } }
+  function save(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+  var used = parseInt(load("zf_used","0"),10); if(isNaN(used)||used<0) used=0;
+  var premium = load("zf_premium","0")==="1";
 
-  // ---- elements ----
-  var $ = function(id){ return document.getElementById(id); };
+  // ---- image state ----
+  var img=null, zoom=1, offX=0, offY=0;
+
+  var $=function(id){ return document.getElementById(id); };
   var fileInput=$("fileInput"), pickBtn=$("pickBtn"), rechooseBtn=$("rechooseBtn");
   var editor=$("editor"), editorBox=$("editorBox"), resultFace=$("resultFace");
-  var zoomEl=$("zoom"), downloadBtn=$("downloadBtn");
-  var step2=$("step2"), editCard=$("editCard"), step3=$("step3");
-  var toastEl=$("toast");
+  var zoomEl=$("zoom"), downloadBtn=$("downloadBtn"), dlCaption=$("dlCaption");
+  var step2=$("step2"), editCard=$("editCard"), step3=$("step3"), toastEl=$("toast");
+  var planBadge=$("planBadge"), remainLabel=$("remainLabel"), planUpBtn=$("planUpBtn");
+  var pickPro=$("pickPro"), pickFree=$("pickFree"), resetLink=$("resetLink");
+  var upModal=$("upModal"), doUpgrade=$("doUpgrade"), closeModal=$("closeModal");
   var ectx=editor.getContext("2d");
-  var rctx=resultFace.getContext("2d");
-  rctx.imageSmoothingEnabled=false;
+  var rctx=resultFace.getContext("2d"); rctx.imageSmoothingEnabled=false;
 
   function toast(msg){
     toastEl.textContent=msg; toastEl.classList.add("show");
-    clearTimeout(toast._t); toast._t=setTimeout(function(){ toastEl.classList.remove("show"); },2200);
+    clearTimeout(toast._t); toast._t=setTimeout(function(){ toastEl.classList.remove("show"); },2600);
   }
 
-  // ---- transform helpers (shared by editor + face) ----
-  function baseScale(){ // "cover" the square
-    if(!img) return 1;
-    return Math.max(EDIT/img.width, EDIT/img.height);
-  }
-  function drawParams(){
-    var ds = baseScale()*zoom;
-    var dw = img.width*ds, dh = img.height*ds;
-    var x = (EDIT-dw)/2 + offX;
-    var y = (EDIT-dh)/2 + offY;
-    return {x:x,y:y,w:dw,h:dh};
-  }
-
-  // ---- render editor preview + blocky result ----
-  function renderEditor(){
-    ectx.clearRect(0,0,EDIT,EDIT);
-    ectx.fillStyle="#0c0f08"; ectx.fillRect(0,0,EDIT,EDIT);
-    if(img){
-      var p=drawParams();
-      ectx.imageSmoothingEnabled=true;
-      ectx.drawImage(img,p.x,p.y,p.w,p.h);
+  // ---- plan UI ----
+  function remaining(){ return Math.max(0, FREE_LIMIT - used); }
+  function refreshPlanUI(){
+    if(premium){
+      planBadge.className="badge premium"; planBadge.textContent="⭐ プレミアム";
+      remainLabel.innerHTML="変更 <b>無制限</b>";
+      planUpBtn.classList.add("hidden");
+      pickFree.textContent="無料に戻す"; pickFree.classList.remove("plain");
+      pickPro.textContent="利用中"; pickPro.disabled=true; pickPro.style.opacity=".7";
+    }else{
+      planBadge.className="badge free"; planBadge.textContent="🟢 無料プラン";
+      remainLabel.innerHTML="残り <b>"+remaining()+"</b> 回";
+      planUpBtn.classList.remove("hidden");
+      pickFree.textContent="利用中"; pickFree.disabled=true;
+      pickPro.textContent="プレミアムにする"; pickPro.disabled=false; pickPro.style.opacity="1";
     }
+    // download caption
+    if(!downloadBtn.classList.contains("hidden")){
+      dlCaption.classList.remove("hidden");
+      dlCaption.innerHTML = premium ? "プレミアム：<b>無制限</b>に作成できます"
+        : (remaining()>0 ? "無料プラン：あと <b>"+remaining()+"</b> 回作成できます"
+                         : "無料の回数を使い切りました → <b>プレミアム</b>で無制限に");
+    }
+  }
+  function openModal(){ upModal.classList.add("show"); }
+  function hideModal(){ upModal.classList.remove("show"); }
+  function goPremium(){ premium=true; save("zf_premium","1"); refreshPlanUI(); hideModal(); toast("⭐ プレミアムが有効になりました！変更が無制限になります"); }
+
+  planUpBtn.addEventListener("click", openModal);
+  pickPro.addEventListener("click", openModal);
+  doUpgrade.addEventListener("click", goPremium);
+  closeModal.addEventListener("click", hideModal);
+  upModal.addEventListener("click", function(e){ if(e.target===upModal) hideModal(); });
+  pickFree.addEventListener("click", function(){
+    if(premium){ premium=false; save("zf_premium","0"); refreshPlanUI(); toast("無料プランに戻しました"); }
+  });
+  resetLink.addEventListener("click", function(){ used=0; save("zf_used","0"); refreshPlanUI(); toast("回数をリセットしました（テスト用）"); });
+
+  // ---- transform helpers ----
+  function baseScale(){ if(!img) return 1; return Math.max(EDIT/img.width, EDIT/img.height); }
+  function drawParams(){
+    var ds=baseScale()*zoom, dw=img.width*ds, dh=img.height*ds;
+    return { x:(EDIT-dw)/2+offX, y:(EDIT-dh)/2+offY, w:dw, h:dh };
+  }
+  function renderEditor(){
+    ectx.clearRect(0,0,EDIT,EDIT); ectx.fillStyle="#0c0f08"; ectx.fillRect(0,0,EDIT,EDIT);
+    if(img){ var p=drawParams(); ectx.imageSmoothingEnabled=true; ectx.drawImage(img,p.x,p.y,p.w,p.h); }
     renderResult();
   }
   function faceCanvas(){
-    // render the crop at texture resolution (FACE x FACE)
     var c=document.createElement("canvas"); c.width=FACE; c.height=FACE;
-    var x=c.getContext("2d");
-    x.imageSmoothingEnabled=true;
+    var x=c.getContext("2d"); x.imageSmoothingEnabled=true;
     x.fillStyle="rgb("+SKIN.join(",")+")"; x.fillRect(0,0,FACE,FACE);
-    if(img){
-      var k=FACE/EDIT, p=drawParams();
-      x.drawImage(img,p.x*k,p.y*k,p.w*k,p.h*k);
-    }
+    if(img){ var k=FACE/EDIT, p=drawParams(); x.drawImage(img,p.x*k,p.y*k,p.w*k,p.h*k); }
     return c;
   }
   function renderResult(){
-    var f=faceCanvas();
-    rctx.clearRect(0,0,128,128);
-    rctx.imageSmoothingEnabled=false;
-    rctx.drawImage(f,0,0,128,128);
+    var f=faceCanvas(); rctx.clearRect(0,0,128,128); rctx.imageSmoothingEnabled=false; rctx.drawImage(f,0,0,128,128);
   }
 
-  // ---- build full zombie texture ----
+  // ---- build zombie texture ----
   function fillRect(x,rgb,X,Y,W,H){ x.fillStyle="rgb("+rgb.join(",")+")"; x.fillRect(X*S,Y*S,W*S,H*S); }
   function buildTexture(){
     var c=document.createElement("canvas"); c.width=TEX; c.height=TEX;
-    var x=c.getContext("2d");
-    x.imageSmoothingEnabled=false;
-    x.clearRect(0,0,TEX,TEX);
-    // whole body = green skin
+    var x=c.getContext("2d"); x.imageSmoothingEnabled=false; x.clearRect(0,0,TEX,TEX);
     fillRect(x,SKIN,0,0,64,64);
-    // shirt blocks (body + arms)
-    fillRect(x,SHIRT,16,16,24,16); // body
-    fillRect(x,SHIRT,40,16,16,16); // right arm
-    fillRect(x,SHIRT,32,48,16,16); // left arm
-    // pants blocks (legs)
-    fillRect(x,PANTS,0,16,16,16);  // right leg
-    fillRect(x,PANTS,16,48,16,16); // left leg
-    // subtle "rotten" noise
+    fillRect(x,SHIRT,16,16,24,16); fillRect(x,SHIRT,40,16,16,16); fillRect(x,SHIRT,32,48,16,16);
+    fillRect(x,PANTS,0,16,16,16); fillRect(x,PANTS,16,48,16,16);
     x.globalAlpha=0.10;
     for(var i=0;i<TEX*TEX/26;i++){
       var px=(Math.random()*TEX)|0, py=(Math.random()*TEX)|0;
-      x.fillStyle = Math.random()<0.5 ? "#000" : "#2c3a12";
-      x.fillRect(px,py,S,S);
+      x.fillStyle=Math.random()<0.5?"#000":"#2c3a12"; x.fillRect(px,py,S,S);
     }
     x.globalAlpha=1;
-    // face photo on top
     x.drawImage(faceCanvas(),8*S,8*S,FACE,FACE);
     return c;
   }
 
-  // ---- minimal ZIP (store, no compression) ----
+  // ---- minimal ZIP (store) ----
   var crcTable=(function(){var t=[];for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
   function crc32(buf){var c=0xFFFFFFFF;for(var i=0;i<buf.length;i++)c=crcTable[(c^buf[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
   function u16(n){return [n&255,(n>>>8)&255];}
   function u32(n){return [n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];}
   function zip(files){
-    // files: [{name, data:Uint8Array}]
     var chunks=[], central=[], offset=0;
     files.forEach(function(f){
       var name=new TextEncoder().encode(f.name);
       var crc=crc32(f.data), sz=f.data.length;
-      var lh=[].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(0),
-              u32(crc),u32(sz),u32(sz),u16(name.length),u16(0));
-      var lhb=new Uint8Array(lh.length+name.length);
-      lhb.set(lh,0); lhb.set(name,lh.length);
+      var lh=[].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(0),u32(crc),u32(sz),u32(sz),u16(name.length),u16(0));
+      var lhb=new Uint8Array(lh.length+name.length); lhb.set(lh,0); lhb.set(name,lh.length);
       chunks.push(lhb); chunks.push(f.data);
-      var ch=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(0),
-              u32(crc),u32(sz),u32(sz),u16(name.length),u16(0),u16(0),u16(0),u16(0),
-              u32(0),u32(offset));
-      var chb=new Uint8Array(ch.length+name.length);
-      chb.set(ch,0); chb.set(name,ch.length);
-      central.push(chb);
-      offset += lhb.length + sz;
+      var ch=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(0),u32(crc),u32(sz),u32(sz),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset));
+      var chb=new Uint8Array(ch.length+name.length); chb.set(ch,0); chb.set(name,ch.length);
+      central.push(chb); offset += lhb.length + sz;
     });
     var cdSize=central.reduce(function(a,b){return a+b.length;},0);
-    var end=[].concat(u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),
-            u32(cdSize),u32(offset),u16(0));
+    var end=[].concat(u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(cdSize),u32(offset),u16(0));
     var parts=chunks.concat(central,[new Uint8Array(end)]);
     var total=parts.reduce(function(a,b){return a+b.length;},0);
     var out=new Uint8Array(total), pos=0;
     parts.forEach(function(p){ out.set(p,pos); pos+=p.length; });
     return out;
   }
-
   function canvasToBytes(canvas){
-    return new Promise(function(res){
-      canvas.toBlob(function(b){ b.arrayBuffer().then(function(ab){ res(new Uint8Array(ab)); }); },"image/png");
-    });
+    return new Promise(function(res){ canvas.toBlob(function(b){ b.arrayBuffer().then(function(ab){ res(new Uint8Array(ab)); }); },"image/png"); });
   }
-
   function manifest(){
-    return {
-      format_version:2,
-      header:{ name:"ゾンビフェイス", description:"ゾンビの顔をあなたの写真に差し替えます（zari Lab）",
-        uuid:UUID1, version:[1,0,0], min_engine_version:[1,16,0] },
-      modules:[ { type:"resources", uuid:UUID2, version:[1,0,0] } ]
-    };
+    return { format_version:2,
+      header:{ name:"ゾンビフェイス", description:"ゾンビの顔をあなたの写真に差し替えます（zari Lab）", uuid:UUID1, version:[1,0,0], min_engine_version:[1,16,0] },
+      modules:[ { type:"resources", uuid:UUID2, version:[1,0,0] } ] };
   }
-
   async function makePack(){
     var tex=buildTexture();
     var icon=document.createElement("canvas"); icon.width=128; icon.height=128;
-    var ix=icon.getContext("2d"); ix.imageSmoothingEnabled=false; ix.drawImage(faceCanvas(),0,0,128,128);
+    icon.getContext("2d").drawImage(faceCanvas(),0,0,128,128);
     var texBytes=await canvasToBytes(tex);
     var iconBytes=await canvasToBytes(icon);
     var manBytes=new TextEncoder().encode(JSON.stringify(manifest(),null,2));
@@ -311,10 +397,8 @@
   pickBtn.addEventListener("click",function(){ fileInput.click(); });
   rechooseBtn.addEventListener("click",function(){ fileInput.click(); });
   fileInput.addEventListener("change",function(e){
-    var file=e.target.files&&e.target.files[0];
-    if(!file) return;
-    var url=URL.createObjectURL(file);
-    var im=new Image();
+    var file=e.target.files&&e.target.files[0]; if(!file) return;
+    var url=URL.createObjectURL(file); var im=new Image();
     im.onload=function(){
       img=im; zoom=1; offX=0; offY=0; zoomEl.value=100;
       step2.classList.remove("hidden"); editCard.classList.remove("hidden");
@@ -322,26 +406,22 @@
       downloadBtn.disabled=false;
       pickBtn.querySelector(".ic").textContent="✅";
       pickBtn.childNodes[1].nodeValue="写真を変える";
-      renderEditor();
+      renderEditor(); refreshPlanUI();
       URL.revokeObjectURL(url);
       editCard.scrollIntoView({behavior:"smooth",block:"center"});
     };
     im.onerror=function(){ toast("この画像は読み込めませんでした"); };
     im.src=url;
   });
-
   zoomEl.addEventListener("input",function(){ zoom=zoomEl.value/100; renderEditor(); });
 
-  // drag to pan (pointer events)
   var dragging=false, lastX=0, lastY=0;
   editorBox.addEventListener("pointerdown",function(e){
-    if(!img) return;
-    dragging=true; lastX=e.clientX; lastY=e.clientY;
+    if(!img) return; dragging=true; lastX=e.clientX; lastY=e.clientY;
     editorBox.classList.add("dragging"); editorBox.setPointerCapture(e.pointerId);
   });
   editorBox.addEventListener("pointermove",function(e){
-    if(!dragging) return;
-    offX += (e.clientX-lastX); offY += (e.clientY-lastY);
+    if(!dragging) return; offX+=(e.clientX-lastX); offY+=(e.clientY-lastY);
     lastX=e.clientX; lastY=e.clientY; renderEditor();
   });
   function endDrag(){ dragging=false; editorBox.classList.remove("dragging"); }
@@ -350,24 +430,29 @@
 
   downloadBtn.addEventListener("click",async function(){
     if(!img){ toast("先に写真をえらんでください"); return; }
+    // plan gate
+    if(!premium && remaining()<=0){
+      toast("無料の変更回数（3回）を使い切りました");
+      openModal(); return;
+    }
     downloadBtn.disabled=true;
     var old=downloadBtn.innerHTML; downloadBtn.innerHTML='<span class="ic">⏳</span>作成中…';
     try{
       var blob=await makePack();
       var url=URL.createObjectURL(blob);
-      var a=document.createElement("a");
-      a.href=url; a.download="zombieface.mcpack";
+      var a=document.createElement("a"); a.href=url; a.download="zombieface.mcpack";
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function(){ URL.revokeObjectURL(url); },4000);
-      toast("ダウンロードしました！マイクラで開いてね");
-    }catch(err){
-      toast("作成に失敗しました: "+err.message);
-    }
+      if(!premium){ used++; save("zf_used", String(used)); }
+      refreshPlanUI();
+      toast(premium ? "ダウンロードしました！マイクラで開いてね"
+                    : (remaining()>0 ? "ダウンロード完了！残り "+remaining()+" 回" : "ダウンロード完了！無料回数はこれで終了です"));
+    }catch(err){ toast("作成に失敗しました: "+err.message); }
     downloadBtn.innerHTML=old; downloadBtn.disabled=false;
   });
 
-  // initial paint (placeholder green face)
-  renderResult();
+  // init
+  renderResult(); refreshPlanUI();
 })();
 </script>
 </body>
