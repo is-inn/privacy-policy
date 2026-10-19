@@ -156,6 +156,7 @@
       <ol>
         <li><b>zombieface.mcpack</b> をタップ → ゲームアプリで開く</li>
         <li>ゲームの設定でパックを <b>ON</b> にする</li>
+        <li>2まいめからは、あたらしいパック（日づけ入り）を <b>いちばん上</b> にする。ふるいパックは OFF でOK</li>
         <li>ワールドに入るとゾンビが変身！🧟</li>
       </ol>
     </div>
@@ -171,9 +172,9 @@
 <script>
 "use strict";
 (function(){
-  var S=8, TEX=64*S, FACE=8*S, EDIT=210;
+  // 統合版のゾンビ(geometry.zombie.v1.8)は 64x32 テクスチャ。顔の正面は (8,8) からの 8x8
+  var S=8, TEX_W=64*S, TEX_H=32*S, FACE=8*S, EDIT=210;
   var SKIN=[106,154,84], SHIRT=[74,122,135], PANTS=[58,63,107];
-  var UUID1="e5b1a7c2-4f3d-4a1e-9c8b-000000000001", UUID2="e5b1a7c2-4f3d-4a1e-9c8b-000000000002";
   var FREE_LIMIT=3, REST_MS=60*60*1000; // 3かい つくったら 1じかん やすみ
 
   function load(k,d){ try{ var v=localStorage.getItem(k); return v===null?d:v; }catch(e){ return d; } }
@@ -246,15 +247,15 @@
 
   function fillRect(x,rgb,X,Y,W,H){ x.fillStyle="rgb("+rgb.join(",")+")"; x.fillRect(X*S,Y*S,W*S,H*S); }
   function buildTexture(){
-    var c=document.createElement("canvas"); c.width=TEX; c.height=TEX;
-    var x=c.getContext("2d"); x.imageSmoothingEnabled=false; x.clearRect(0,0,TEX,TEX);
-    fillRect(x,SKIN,0,0,64,64);
-    fillRect(x,SHIRT,16,16,24,16); fillRect(x,SHIRT,40,16,16,16); fillRect(x,SHIRT,32,48,16,16);
-    fillRect(x,PANTS,0,16,16,16); fillRect(x,PANTS,16,48,16,16);
+    var c=document.createElement("canvas"); c.width=TEX_W; c.height=TEX_H;
+    var x=c.getContext("2d"); x.imageSmoothingEnabled=false; x.clearRect(0,0,TEX_W,TEX_H);
+    fillRect(x,SKIN,0,0,32,16);                                   // あたま
+    fillRect(x,SHIRT,16,16,24,16); fillRect(x,SHIRT,40,16,16,16); // からだ・うで
+    fillRect(x,PANTS,0,16,16,16);                                 // あし
     x.globalAlpha=0.10;
-    for(var i=0;i<TEX*TEX/26;i++){ var px=(Math.random()*TEX)|0, py=(Math.random()*TEX)|0; x.fillStyle=Math.random()<0.5?"#000":"#2c3a12"; x.fillRect(px,py,S,S); }
+    for(var i=0;i<TEX_W*TEX_H/26;i++){ var px=(Math.random()*TEX_W)|0, py=(Math.random()*TEX_H)|0; if(px>=32*S&&py<16*S) continue; x.fillStyle=Math.random()<0.5?"#000":"#2c3a12"; x.fillRect(px,py,S,S); }
     x.globalAlpha=1;
-    x.drawImage(faceCanvas(),8*S,8*S,FACE,FACE);
+    x.drawImage(faceCanvas(),8*S,8*S,FACE,FACE);                  // かおの正面
     return c;
   }
 
@@ -282,7 +283,15 @@
     return out;
   }
   function canvasToBytes(canvas){ return new Promise(function(res){ canvas.toBlob(function(b){ b.arrayBuffer().then(function(ab){ res(new Uint8Array(ab)); }); },"image/png"); }); }
-  function manifest(){ return { format_version:2, header:{ name:"ゾンビフェイス", description:"ゾンビの顔をあなたの写真に（zari Lab）", uuid:UUID1, version:[1,0,0], min_engine_version:[1,16,0] }, modules:[ { type:"resources", uuid:UUID2, version:[1,0,0] } ] }; }
+  // パックごとに別のUUIDにする（同じだと2つ目以降が「重複」で取り込めない）
+  function newUUID(){
+    if(window.crypto&&crypto.randomUUID) return crypto.randomUUID();
+    var b=new Uint8Array(16); crypto.getRandomValues(b); b[6]=(b[6]&15)|64; b[8]=(b[8]&63)|128;
+    var h=Array.from(b,function(v){ return (v+256).toString(16).slice(1); }).join("");
+    return h.slice(0,8)+"-"+h.slice(8,12)+"-"+h.slice(12,16)+"-"+h.slice(16,20)+"-"+h.slice(20);
+  }
+  function stamp(){ var d=new Date(), p=function(n){ return (n<10?"0":"")+n; }; return (d.getMonth()+1)+"/"+d.getDate()+" "+p(d.getHours())+":"+p(d.getMinutes()); }
+  function manifest(){ return { format_version:2, header:{ name:"ゾンビフェイス "+stamp(), description:"ゾンビの顔をあなたの写真に（zari Lab）", uuid:newUUID(), version:[1,0,0], min_engine_version:[1,16,0] }, modules:[ { type:"resources", uuid:newUUID(), version:[1,0,0] } ] }; }
   async function makePack(){
     var tex=buildTexture();
     var icon=document.createElement("canvas"); icon.width=128; icon.height=128; icon.getContext("2d").drawImage(faceCanvas(),0,0,128,128);
