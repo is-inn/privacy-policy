@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>ゾンビフェイス</title>
-<meta name="description" content="マイクラのゾンビの顔を、すきな写真にかえよう。">
+<meta name="description" content="ゾンビの顔を、すきな写真にかえよう。">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#69b533">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -115,9 +115,6 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar">
-    <button id="planBadge" class="planbadge">⭐ 使い放題</button>
-  </div>
   <header>
     <h1 class="logo"><span class="z">ゾンビ</span>フェイス</h1>
   </header>
@@ -154,11 +151,11 @@
   <div id="dots" class="dots" style="display:none"></div>
 
   <details class="help">
-    <summary>？ マイクラへの入れかた</summary>
+    <summary>？ ゲームへの入れかた</summary>
     <div class="body">
       <ol>
-        <li><b>zombieface.mcpack</b> をタップ →「Minecraftで開く」</li>
-        <li>マイクラの設定でパックを <b>ON</b> にする</li>
+        <li><b>zombieface.mcpack</b> をタップ → ゲームアプリで開く</li>
+        <li>ゲームの設定でパックを <b>ON</b> にする</li>
         <li>ワールドに入るとゾンビが変身！🧟</li>
       </ol>
     </div>
@@ -169,30 +166,6 @@
   </footer>
 </div>
 
-<!-- PLAN MODAL -->
-<div class="modal" id="planModal">
-  <div class="box">
-    <p class="m-title">プラン</p>
-    <div class="pricing">
-      <div class="plan">
-        <h3>むりょう</h3>
-        <div class="price">¥0</div>
-        <div class="desc">3かいまで</div>
-        <button id="pickFree" class="pick current">現在使用中</button>
-      </div>
-      <div class="plan pro">
-        <span class="ribbon">おすすめ</span>
-        <h3>プレミアム</h3>
-        <div class="price">¥300<small>/月</small></div>
-        <div class="desc">使い放題</div>
-        <button id="pickPro" class="pick gold">プレミアムプラン購入</button>
-      </div>
-    </div>
-    <p class="disclaim">お支払い機能は準備中です。いまは無料でおためしできます。</p>
-    <button class="close" id="closeModal">とじる</button>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -201,12 +174,13 @@
   var S=8, TEX=64*S, FACE=8*S, EDIT=210;
   var SKIN=[106,154,84], SHIRT=[74,122,135], PANTS=[58,63,107];
   var UUID1="e5b1a7c2-4f3d-4a1e-9c8b-000000000001", UUID2="e5b1a7c2-4f3d-4a1e-9c8b-000000000002";
-  var FREE_LIMIT=3;
+  var FREE_LIMIT=3, REST_MS=60*60*1000; // 3かい つくったら 1じかん やすみ
 
   function load(k,d){ try{ var v=localStorage.getItem(k); return v===null?d:v; }catch(e){ return d; } }
   function save(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
   var used=parseInt(load("zf_used","0"),10); if(isNaN(used)||used<0) used=0;
-  var premium=load("zf_premium","0")==="1";
+  var restUntil=parseInt(load("zf_rest_until","0"),10); if(isNaN(restUntil)) restUntil=0;
+  if(used>=FREE_LIMIT && !restUntil){ used=0; save("zf_used","0"); } // 旧ルール(3かいで終わり)の人はリセット
 
   var img=null, zoom=1, offX=0, offY=0;
   var $=function(id){ return document.getElementById(id); };
@@ -215,41 +189,26 @@
   var zoomEl=$("zoom"), downloadBtn=$("downloadBtn"), dots=$("dots");
   var editCard=$("editCard"), toastEl=$("toast");
   var sampleDemo=$("sampleDemo"), demoBefore=$("demoBefore"), demoAfter=$("demoAfter");
-  var planBadge=$("planBadge"), planModal=$("planModal"), closeModal=$("closeModal");
-  var pickPro=$("pickPro"), pickFree=$("pickFree");
   var ectx=editor.getContext("2d");
   var rctx=resultFace.getContext("2d"); rctx.imageSmoothingEnabled=false;
 
   function toast(msg){ toastEl.textContent=msg; toastEl.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(function(){ toastEl.classList.remove("show"); },2600); }
-  function remaining(){ return Math.max(0, FREE_LIMIT-used); }
+  // やすみ時間がおわっていたら、回数をもとにもどす
+  function checkRest(){
+    if(restUntil && Date.now()>=restUntil){ restUntil=0; used=0; save("zf_rest_until","0"); save("zf_used","0"); }
+  }
+  function remaining(){ checkRest(); return Math.max(0, FREE_LIMIT-used); }
+  function restMinutes(){ return Math.max(1, Math.ceil((restUntil-Date.now())/60000)); }
 
   function refreshUI(){
-    // badge
-    if(premium){ planBadge.classList.add("on"); planBadge.textContent="⭐ 使い放題"; }
-    else{ planBadge.classList.remove("on"); planBadge.textContent="⭐ 使い放題"; }
     // remaining dots (after a photo is chosen)
     if(dots.style.display!=="none"){
-      if(premium){ dots.innerHTML='<span class="inf">∞</span> 使い放題'; }
-      else{ var html='のこり '; for(var i=0;i<FREE_LIMIT;i++){ html+='<span class="dot'+(i<remaining()?' on':'')+'"></span>'; } dots.innerHTML=html; }
-    }
-    // modal buttons
-    if(premium){
-      pickFree.textContent="むりょうに戻す"; pickFree.disabled=false; pickFree.className="pick";
-      pickPro.textContent="現在使用中"; pickPro.disabled=true; pickPro.className="pick current";
-    }else{
-      pickFree.textContent="現在使用中"; pickFree.disabled=true; pickFree.className="pick current";
-      pickPro.textContent="プレミアムプラン購入"; pickPro.disabled=false; pickPro.className="pick gold";
+      var left=remaining();
+      if(left<=0 && restUntil){ dots.innerHTML='😴 ひとやすみ中（あと '+restMinutes()+' ぷん）'; }
+      else{ var html='のこり '; for(var i=0;i<FREE_LIMIT;i++){ html+='<span class="dot'+(i<left?' on':'')+'"></span>'; } dots.innerHTML=html; }
     }
   }
-  function openModal(){ planModal.classList.add("show"); }
-  function hideModal(){ planModal.classList.remove("show"); }
-  function buyPremium(){ premium=true; save("zf_premium","1"); refreshUI(); hideModal(); toast("⭐ プレミアムになりました！使い放題です"); }
-
-  planBadge.addEventListener("click", openModal);
-  closeModal.addEventListener("click", hideModal);
-  planModal.addEventListener("click", function(e){ if(e.target===planModal) hideModal(); });
-  pickPro.addEventListener("click", function(){ if(!premium) buyPremium(); });
-  pickFree.addEventListener("click", function(){ if(premium){ premium=false; save("zf_premium","0"); refreshUI(); toast("むりょうプランに戻しました"); } });
+  setInterval(refreshUI, 30000);
 
   function baseScale(){ if(!img) return 1; return Math.max(EDIT/img.width, EDIT/img.height); }
   function drawParams(){ var ds=baseScale()*zoom, dw=img.width*ds, dh=img.height*ds; return { x:(EDIT-dw)/2+offX, y:(EDIT-dh)/2+offY, w:dw, h:dh }; }
@@ -360,16 +319,20 @@
 
   downloadBtn.addEventListener("click",async function(){
     if(!img){ toast("さきに写真をえらんでね"); return; }
-    if(!premium && remaining()<=0){ toast("むりょうは3かいまで。プレミアムで使い放題に！"); openModal(); return; }
+    if(remaining()<=0){
+      if(!restUntil){ restUntil=Date.now()+REST_MS; save("zf_rest_until",String(restUntil)); }
+      refreshUI(); toast("ひとやすみしよう！あと "+restMinutes()+" ぷんで またつくれるよ"); return;
+    }
     downloadBtn.disabled=true; var old=downloadBtn.innerHTML; downloadBtn.innerHTML='<span class="ic">⏳</span>つくってる…';
     try{
       var blob=await makePack(), url=URL.createObjectURL(blob);
       var a=document.createElement("a"); a.href=url; a.download="zombieface.mcpack";
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function(){ URL.revokeObjectURL(url); },4000);
-      if(!premium){ used++; save("zf_used",String(used)); }
+      used++; save("zf_used",String(used));
+      if(used>=FREE_LIMIT){ restUntil=Date.now()+REST_MS; save("zf_rest_until",String(restUntil)); }
       refreshUI();
-      toast("できた！マイクラでひらいてね🧟");
+      toast("できた！ゲームでひらいてね🧟");
     }catch(err){ toast("しっぱいしました: "+err.message); }
     downloadBtn.innerHTML=old; downloadBtn.disabled=false;
   });

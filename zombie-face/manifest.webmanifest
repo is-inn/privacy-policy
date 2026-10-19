@@ -1,7 +1,7 @@
 {
   "name": "ゾンビフェイス",
   "short_name": "ゾンビフェイス",
-  "description": "マイクラのゾンビの顔を、すきな写真にかえよう。",
+  "description": "ゾンビの顔を、すきな写真にかえよう。",
   "lang": "ja",
   "start_url": "./",
   "scope": "./",

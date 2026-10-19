@@ -1,5 +1,6 @@
 // ゾンビフェイス — minimal offline-capable service worker
-const CACHE = 'zf-v1';
+// ページ本体はネット優先（更新がすぐ届く）、それ以外はキャッシュ優先
+const CACHE = 'zf-v2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {
@@ -13,15 +14,24 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+function fetchAndCache(req) {
+  return fetch(req).then((resp) => {
+    const copy = resp.clone();
+    caches.open(CACHE).then((c) => c.put(req, copy));
+    return resp;
+  });
+}
+
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  if (e.request.mode === 'navigate') {
+    e.respondWith(fetchAndCache(e.request).catch(() =>
+      caches.match(e.request).then((r) => r || caches.match('./index.html'))));
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then((r) =>
-      r || fetch(e.request).then((resp) => {
-        const copy = resp.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy));
-        return resp;
-      }).catch(() => caches.match('./index.html'))
+      r || fetchAndCache(e.request).catch(() => caches.match('./index.html'))
     )
   );
 });
