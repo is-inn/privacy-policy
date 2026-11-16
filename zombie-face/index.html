@@ -111,9 +111,42 @@
   .pick.current{background:var(--panel2); color:var(--muted); border:1px solid var(--line);}
   .modal .disclaim{font-size:.72rem; color:var(--muted); margin:14px 4px 0; text-align:center;}
   .modal .close{background:none; border:none; color:var(--muted); font-size:.9rem; cursor:pointer; margin-top:12px; width:100%; font-family:inherit;}
+
+  /* はじめてのつかいかた（オンボーディング） */
+  .ob{position:fixed; inset:0; background:rgba(20,30,12,.55); display:none; align-items:center; justify-content:center; padding:18px; z-index:80;}
+  .ob.show{display:flex;}
+  .ob .box{background:var(--bg); border:1px solid var(--line); border-radius:24px; width:100%; max-width:380px; padding:18px 18px 20px; box-shadow:0 14px 44px rgba(20,30,10,.3); text-align:center; position:relative;}
+  .ob .skip{position:absolute; top:12px; right:14px; background:none; border:none; color:var(--muted); font-family:inherit; font-size:.82rem; font-weight:700; cursor:pointer;}
+  .ob .step{font-size:.72rem; font-weight:800; letter-spacing:.08em; color:var(--green-d); margin-top:4px;}
+  .ob .art{font-size:4.4rem; line-height:1; margin:12px 0 4px;}
+  .ob h2{font-size:1.25rem; margin:4px 0 6px;}
+  .ob p{font-size:.95rem; color:var(--muted); margin:0 6px; min-height:3em;}
+  .ob .dots{display:flex; gap:8px; justify-content:center; margin:16px 0 14px;}
+  .ob .dots b{width:9px; height:9px; border-radius:50%; background:var(--line); transition:.2s;}
+  .ob .dots b.on{background:var(--green); width:24px; border-radius:999px;}
+  .ob .go{width:100%; border:none; border-radius:16px; padding:15px; font-size:1.05rem; font-weight:800; color:#fff; font-family:inherit; cursor:pointer; background:linear-gradient(180deg,#6dbb37,var(--green-d)); box-shadow:0 4px 14px rgba(77,143,34,.28);}
+  .ob .go:active{transform:translateY(1px);}
+  .ob .back{display:block; margin:8px auto 0; background:none; border:none; color:var(--muted); font-family:inherit; font-size:.85rem; cursor:pointer;}
+  .ob .back[hidden]{display:none;}
+  .howto{position:fixed; top:10px; left:10px; z-index:40; background:var(--panel); border:1px solid var(--line); color:var(--muted); border-radius:999px; font-family:inherit; font-size:.78rem; font-weight:700; padding:6px 12px; cursor:pointer;}
+  .howto:active{transform:translateY(1px);}
 </style>
 </head>
 <body>
+<button id="howToBtn" class="howto" type="button">？ つかいかた</button>
+<div class="ob" id="onboard" role="dialog" aria-modal="true" aria-label="つかいかた">
+  <div class="box">
+    <button class="skip" id="obSkip" type="button">スキップ</button>
+    <div class="step" id="obStep"></div>
+    <div class="art" id="obArt"></div>
+    <h2 id="obTitle"></h2>
+    <p id="obBody"></p>
+    <div class="dots" id="obDots"></div>
+    <button class="go" id="obGo" type="button">つぎへ</button>
+    <button class="back" id="obBack" type="button" hidden>もどる</button>
+  </div>
+</div>
+
 <div class="wrap">
   <header>
     <h1 class="logo"><span class="z">ゾンビ</span>フェイス</h1>
@@ -348,6 +381,39 @@
 
   renderDemo();
   refreshUI();
+})();
+</script>
+<script>
+"use strict";
+(function(){
+  // はじめてのつかいかた（ゲーム名は出さない中立表記）
+  var pages=[
+    {step:"① しゃしん", art:"📷", title:"すきな写真をえらぶ", body:"ゾンビの顔にしたい写真をえらぶよ。カメラでとった写真でもOK！"},
+    {step:"② へんしん", art:"🧟", title:"顔がゾンビになる", body:"ドラッグとズームで顔を合わせると、ゾンビの顔ができあがり。"},
+    {step:"③ ゲーム", art:"🎮", title:"ゲームに入れる", body:"ダウンロードして、ゲームでパックをひらいて ON にすると、ゾンビが変身！"}
+  ];
+  var i=0;
+  var g=function(id){ return document.getElementById(id); };
+  var ob=g("onboard"), stepEl=g("obStep"), artEl=g("obArt"), titleEl=g("obTitle"),
+      bodyEl=g("obBody"), dotsEl=g("obDots"), goEl=g("obGo"), backEl=g("obBack"),
+      skipEl=g("obSkip"), howBtn=g("howToBtn");
+  dotsEl.innerHTML=pages.map(function(){ return "<b></b>"; }).join("");
+  var dotEls=dotsEl.querySelectorAll("b");
+  function render(){
+    var p=pages[i], last=i===pages.length-1;
+    stepEl.textContent=p.step; artEl.textContent=p.art; titleEl.textContent=p.title; bodyEl.textContent=p.body;
+    goEl.textContent=last?"はじめる":"つぎへ";
+    backEl.hidden=(i===0); skipEl.hidden=last;
+    for(var n=0;n<dotEls.length;n++){ dotEls[n].className=(n===i?"on":""); }
+  }
+  function open(){ i=0; render(); ob.classList.add("show"); }
+  function close(){ ob.classList.remove("show"); try{ localStorage.setItem("zf_onboarded","1"); }catch(e){} }
+  goEl.addEventListener("click",function(){ if(i===pages.length-1){ close(); } else { i++; render(); } });
+  backEl.addEventListener("click",function(){ if(i>0){ i--; render(); } });
+  skipEl.addEventListener("click",close);
+  howBtn.addEventListener("click",open);
+  var seen; try{ seen=localStorage.getItem("zf_onboarded"); }catch(e){ seen="1"; }
+  if(!seen){ open(); }
 })();
 </script>
 <script>
